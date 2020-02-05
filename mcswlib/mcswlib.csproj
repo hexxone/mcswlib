@@ -4,20 +4,22 @@
     <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <StartupObject></StartupObject>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>hexxon_me_CA.pfx</AssemblyOriginatorKeyFile>
-    <Version>2.0.1</Version>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Nuget_Hexxonite_Sign.pfx</AssemblyOriginatorKeyFile>
+    <Version>2.0.2</Version>
     <Description>MCSWLIB is a free and open-source ping library for Minecraft-Servers, written in .NET
 
 This package can ping a large variety of different Minecraft-Server versions and get status informations with several possible patterns.</Description>
     <Copyright></Copyright>
     <ApplicationIcon />
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageLicenseExpression>GPLV3</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Hexxonite/mcswlib</PackageProjectUrl>
     <PackageTags>minecraft server status ping library c#</PackageTags>
     <PackageReleaseNotes>https://github.com/Hexxonite/mcswlib/releases</PackageReleaseNotes>
-    <AssemblyVersion>2.0.1</AssemblyVersion>
+    <AssemblyVersion>2.0.2</AssemblyVersion>
+    <DelaySign>false</DelaySign>
+    <FileVersion>2.0.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
