@@ -69,4 +69,5 @@ For detailed info on minecraft protocol versions go here: https://wiki.vg/Protoc
 
 ### Libraries:
 - [.NET Core 2.1](https://dotnet.microsoft.com/)
+- [System.Drawing](https://docs.microsoft.com/de-de/dotnet/api/system.drawing?view=netcore-2.1) for parsing the server-icon
 - [Newtonsoft.JSON](https://github.com/JamesNK/Newtonsoft.Json) for (de-)serializing the server info and settings
