@@ -1,6 +1,9 @@
 # mcswlib
 This package can ping a large variety of different Minecraft-Server versions and get status informations using different patterns.
 
+## Installation:
+
+Available on nuget: https://www.nuget.org/packages/mcswlib/
 
 ### Examples:
 
