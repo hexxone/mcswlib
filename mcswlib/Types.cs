@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace mcswlib
+﻿namespace mcswlib
 {
     public static class Types
     {

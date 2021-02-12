@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -9,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using mcswlib.ServerStatus.Event;
 using Newtonsoft.Json;
+using SkiaSharp;
 
 namespace mcswlib.ServerStatus.ServerInfo
 {
@@ -73,7 +73,7 @@ namespace mcswlib.ServerStatus.ServerInfo
                 }
             }
             // parse favicon
-            Bitmap image = null;
+            SKImage image = null;
             if (json.Contains("\"favicon\":\""))
             {
                 try
@@ -81,9 +81,8 @@ namespace mcswlib.ServerStatus.ServerInfo
                     var hdr = "data:image/png;base64,";
                     var imgStr = (string)ping.favicon;
                     if (!imgStr.StartsWith(hdr)) throw new Exception("Unkown Format");
-                    byte[] imgData = Convert.FromBase64String(imgStr.Substring(hdr.Length));
-                    using (var imgStream = new MemoryStream(imgData, 0, imgData.Length))
-                        image = new Bitmap(imgStream);
+                    var imgData = Convert.FromBase64String(imgStr.Substring(hdr.Length));
+                    image = SKImage.FromEncodedData(imgData);
                 }
                 catch (Exception ie)
                 {

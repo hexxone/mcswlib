@@ -5,7 +5,7 @@
     /// </summary>
     public class EventMessages
     {
-        public string ServerOnline = "Server status: online\r\nMOTD:\r\n<code><text></code>";
+        public string ServerOnline = "Server status: online\r\nVersion: <code><version></code>\r\nMOTD:\r\n<code><text></code>";
         public string ServerOffline = "Server status: offline\r\nReason:\r\n<code><text></code>";
 
         public string CountJoin = "<count> <player> joined.";

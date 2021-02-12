@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using mcswlib.ServerStatus.Event;
+using SkiaSharp;
 
 namespace mcswlib.ServerStatus.ServerInfo
 {
@@ -20,7 +20,7 @@ namespace mcswlib.ServerStatus.ServerInfo
         /// <param name="favIco">Server's favicon object if given</param>
         /// <param name="players">Server's online players</param>
         internal ServerInfoBase(DateTime dt, long sp, string motd, int maxPlayers, int playerCount, string version,
-            Bitmap favIco, List<PlayerPayLoad> players)
+            SKImage favIco, List<PlayerPayLoad> players)
         {
             HadSuccess = true;
             RequestDate = dt;
@@ -100,7 +100,7 @@ namespace mcswlib.ServerStatus.ServerInfo
         /// <summary>
         ///     The Icon for the Server
         /// </summary>
-        public Bitmap FavIcon { get; }
+        public SKImage FavIcon { get; }
 
         /// <summary>
         ///     String override

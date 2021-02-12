@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>2.1.1</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -11,7 +11,7 @@ This package can ping a large variety of different Minecraft-Server versions and
     <PackageProjectUrl>https://github.com/Hexxonite/mcswlib</PackageProjectUrl>
     <PackageTags>minecraft server status ping library c#</PackageTags>
     <PackageReleaseNotes>https://github.com/Hexxonite/mcswlib/releases</PackageReleaseNotes>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>Nuget_Hexxonite_Sign.pfx</AssemblyOriginatorKeyFile>
     <ApplicationIcon>mcsw.ico</ApplicationIcon>
   </PropertyGroup>
@@ -19,7 +19,8 @@ This package can ping a large variety of different Minecraft-Server versions and
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    <PackageReference Include="SkiaSharp" Version="2.80.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.2" />
   </ItemGroup>
 
 </Project>

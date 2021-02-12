@@ -3,6 +3,7 @@ using mcswlib.ServerStatus.ServerInfo;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using SkiaSharp;
 
 namespace mcswlib.ServerStatus
 {
@@ -43,6 +44,7 @@ namespace mcswlib.ServerStatus
         public string Version { get; private set; }
         public string MOTD { get; private set; }
         public string LastError { get; private set; }
+        public SKImage FavIcon { get; private set; }
 
         /// <summary>
         ///     Include a list of Names or UID's of Minecraft-Users.
@@ -73,7 +75,9 @@ namespace mcswlib.ServerStatus
                 {
                     Debug.WriteLine("Server '" + Updater.Address + ":" + Updater.Port + "' status change: " + current.HadSuccess);
                     var errMsg = current.LastError != null ? "Connection Failed: " + current.LastError.GetType().Name : "";
-                    events.Add(new OnlineStatusEvent(messages, current.HadSuccess, current.HadSuccess ? current.ServerMotd : errMsg));
+                    events.Add(new OnlineStatusEvent(messages, 
+                        current.HadSuccess, current.HadSuccess ? current.ServerMotd : errMsg, 
+                        current.HadSuccess ? current.MinecraftVersion : "0.0.0"));
                 }
 
                 // if first info, or last player count was different (player went online or offline) => invoke
@@ -144,6 +148,7 @@ namespace mcswlib.ServerStatus
             Version = nu ? "0.0.0" : si.MinecraftVersion;
             MOTD = nu || !si.HadSuccess ? "-" : si.ServerMotd;
             LastError = !nu && si.LastError != null ? si.LastError.GetType().Name : "-";
+            FavIcon = !nu ? si.FavIcon : null;
 
             PlayerList.Clear();
             if (!nu && si.OnlinePlayers != null) PlayerList.AddRange(si.OnlinePlayers);

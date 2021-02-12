@@ -12,7 +12,7 @@ namespace mcswlib.ServerStatus
         internal ServerStatusUpdater() { }
 
         // the time over which server infos are held in memory...
-        public static TimeSpan ClearSpan = new TimeSpan(0, 2, 0);
+        public static TimeSpan ClearSpan = new TimeSpan(0, 6, 0, 0);
 
         // contains the received Server-Infos.
         private readonly List<ServerInfoBase> _history = new List<ServerInfoBase>();
