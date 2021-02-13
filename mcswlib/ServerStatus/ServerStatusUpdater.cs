@@ -81,7 +81,7 @@ namespace mcswlib.ServerStatus
         /// <summary>
         ///     Returns the latest (successfull) ServerInfo
         /// </summary>
-        /// <param name="successful">filter for the last successfull</param>
+        /// <param name="successful">filter for the Last successfull</param>
         /// <returns></returns>
         public ServerInfoBase GetLatestServerInfo(bool successful = false)
         {

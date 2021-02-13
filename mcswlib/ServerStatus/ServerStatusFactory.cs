@@ -30,7 +30,7 @@ namespace mcswlib.ServerStatus
         private Thread thread;
 
 
-        public EventMessages Messages { get; private set; }
+        public EventMessages Messages { get; }
 
         public bool AutoUpdating => thread != null && thread.IsAlive;
 
@@ -111,11 +111,9 @@ namespace mcswlib.ServerStatus
             // away with it
             states.Remove(status);
             // check if the base is still in use and if not remove it
-            if (!IsBeingUsed(status.Updater))
-            {
-                updaters.Remove(status.Updater);
-                status.Updater.Dispose();
-            }
+            if (IsBeingUsed(status.Parent)) return true;
+            updaters.Remove(status.Parent);
+            status.Parent.Dispose();
             // done
             return true;
         }
@@ -127,9 +125,7 @@ namespace mcswlib.ServerStatus
         /// <returns></returns>
         public bool Destroy(ServerStatus[] statuses)
         {
-            var res = true;
-            foreach (var srv in statuses) res &= Destroy(srv);
-            return res;
+            return statuses.Aggregate(true, (current, srv) => current & Destroy(srv));
         }
 
         /// <summary>
@@ -150,7 +146,7 @@ namespace mcswlib.ServerStatus
         /// <returns></returns>
         private bool IsBeingUsed(ServerStatusUpdater ssb)
         {
-            return states.FindAll(s => ssb.Equals(s.Updater)).Count() > 1;
+            return states.FindAll(s => ssb.Equals(s.Parent)).Count() > 1;
         }
 
         /// <summary>

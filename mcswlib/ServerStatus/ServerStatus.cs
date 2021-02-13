@@ -3,30 +3,29 @@ using mcswlib.ServerStatus.ServerInfo;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using SkiaSharp;
 
 namespace mcswlib.ServerStatus
 {
     public class ServerStatus
     {
-        private EventMessages messages;
+        // Identity
 
-        internal ServerStatus(string label, ServerStatusUpdater basis, EventMessages msg)
+        private readonly EventMessages messages;
+
+        public string Label { get; }
+        public ServerStatusUpdater Parent { get; }
+
+
+        internal ServerStatus(string label, ServerStatusUpdater prnt, EventMessages msg)
         {
             Label = label;
-            Updater = basis;
+            Parent = prnt;
+            messages = msg;
+            // default settings
             NotifyServer = true;
             NotifyCount = true;
             NotifyNames = true;
-            PlayerList = new List<PlayerPayLoad>();
-            messages = msg;
-            ApplyServerInfo(null);
         }
-
-        // Identity
-
-        public string Label { get; private set; }
-        public ServerStatusUpdater Updater { get; private set; }
 
         // Settings
 
@@ -34,17 +33,6 @@ namespace mcswlib.ServerStatus
         public bool NotifyCount { get; set; }
         public bool NotifyNames { get; set; }
 
-        // Current / Last Status
-
-        public List<PlayerPayLoad> PlayerList { get; private set; }
-        public string LastStatusDate { get; private set; }
-        public bool IsOnline { get; private set; }
-        public int PlayerCount { get; private set; }
-        public int MaxPlayerCount { get; private set; }
-        public string Version { get; private set; }
-        public string MOTD { get; private set; }
-        public string LastError { get; private set; }
-        public SKImage FavIcon { get; private set; }
 
         /// <summary>
         ///     Include a list of Names or UID's of Minecraft-Users.
@@ -56,39 +44,39 @@ namespace mcswlib.ServerStatus
         private readonly Dictionary<string, string> userNames = new Dictionary<string, string>();
         private readonly Dictionary<string, bool> userStates = new Dictionary<string, bool>();
 
-        private ServerInfoBase last = null;
+        public ServerInfoBase Last { get; private set; }
 
         /// <summary>
-        ///     Will compare the last status with the current one and return event updates.
+        ///     Will compare the Last status with the current one and return event updates.
         /// </summary>
         /// <returns></returns>
         public EventBase[] Update()
         {
             // event-queue
             var events = new List<EventBase>();
-            var isFirst = last == null;
-            var current = Updater.GetLatestServerInfo();
+            var isFirst = Last == null;
+            var current = Parent.GetLatestServerInfo();
             if (current != null)
             {
-                // if first info, or last success was different from this (either went online or went offline) => invoke
-                if (NotifyServer && (isFirst || last.HadSuccess != current.HadSuccess))
+                // if first info, or Last success was different from this (either went online or went offline) => invoke
+                if (NotifyServer && (isFirst || Last.HadSuccess != current.HadSuccess))
                 {
-                    Debug.WriteLine("Server '" + Updater.Address + ":" + Updater.Port + "' status change: " + current.HadSuccess);
+                    Debug.WriteLine("Server '" + Parent.Address + ":" + Parent.Port + "' status change: " + current.HadSuccess);
                     var errMsg = current.LastError != null ? "Connection Failed: " + current.LastError.GetType().Name : "";
                     events.Add(new OnlineStatusEvent(messages, 
                         current.HadSuccess, current.HadSuccess ? current.ServerMotd : errMsg, 
                         current.HadSuccess ? current.MinecraftVersion : "0.0.0"));
                 }
 
-                // if first info, or last player count was different (player went online or offline) => invoke
+                // if first info, or Last player count was different (player went online or offline) => invoke
                 if (NotifyCount)
                 {
                     var diff = isFirst
                         ? current.CurrentPlayerCount
-                        : current.CurrentPlayerCount - last.CurrentPlayerCount;
+                        : current.CurrentPlayerCount - Last.CurrentPlayerCount;
                     if (diff != 0)
                     {
-                        Debug.WriteLine("Server '" + Updater.Address + ":" + Updater.Port + "' count change: " + diff);
+                        Debug.WriteLine("Server '" + Parent.Address + ":" + Parent.Port + "' count change: " + diff);
                         events.Add(new PlayerChangeEvent(messages, diff));
                     }
                 }
@@ -103,7 +91,7 @@ namespace mcswlib.ServerStatus
                             onlineIds.Add(p.Id);
                         // register name
                         userNames[p.Id] = p.Name;
-                        // if notify and user has state and last state was offline and user is watched, notify change
+                        // if notify and user has state and Last state was offline and user is watched, notify change
                         if (NotifyNames && (!userStates.ContainsKey(p.Id) || !userStates[p.Id]))
                             events.Add(new PlayerStateEvent(messages, p, true));
                         // register state or set to true
@@ -126,32 +114,9 @@ namespace mcswlib.ServerStatus
 
                 }
             }
-            // set new last
-            last = current;
-            ApplyServerInfo(current);
+            // set new Last
+            Last = current;
             return events.ToArray();
-        }
-
-
-        /// <summary>
-        ///     Will apply the current server-info to the public vars
-        /// </summary>
-        /// <param name="si"></param>
-        private void ApplyServerInfo(ServerInfoBase si)
-        {
-            var nu = si == null;
-
-            LastStatusDate = nu ? "-" : si.RequestDate.AddMilliseconds(si.RequestTime).ToString("HH:mm:ss");
-            IsOnline = !nu && si.HadSuccess;
-            PlayerCount = nu ? 0 : si.CurrentPlayerCount;
-            MaxPlayerCount = nu ? 0 : si.MaxPlayerCount;
-            Version = nu ? "0.0.0" : si.MinecraftVersion;
-            MOTD = nu || !si.HadSuccess ? "-" : si.ServerMotd;
-            LastError = !nu && si.LastError != null ? si.LastError.GetType().Name : "-";
-            FavIcon = !nu ? si.FavIcon : null;
-
-            PlayerList.Clear();
-            if (!nu && si.OnlinePlayers != null) PlayerList.AddRange(si.OnlinePlayers);
         }
     }
 }

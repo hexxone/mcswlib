@@ -63,14 +63,14 @@ namespace mcswlib.ServerStatus.ServerInfo
         public bool HadSuccess { get; }
 
         /// <summary>
-        ///     Returns the last occured runtime error
+        ///     Returns the Last occured runtime error
         /// </summary>
         public Exception LastError { get; }
 
         /// <summary>
         ///     Get the raw Message of the day including formatting's and color codes.
         /// </summary>
-        public string RawMotd { get; private set; }
+        public string RawMotd { get; }
 
         /// <summary>
         ///     Gets the server's MOTD as Text
