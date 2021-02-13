@@ -9,18 +9,14 @@ namespace mcswlib.ServerStatus
     public class ServerStatus
     {
         // Identity
-
-        private readonly EventMessages messages;
-
         public string Label { get; }
         public ServerStatusUpdater Parent { get; }
 
 
-        internal ServerStatus(string label, ServerStatusUpdater prnt, EventMessages msg)
+        internal ServerStatus(string label, ServerStatusUpdater prnt)
         {
             Label = label;
             Parent = prnt;
-            messages = msg;
             // default settings
             NotifyServer = true;
             NotifyCount = true;
@@ -63,9 +59,10 @@ namespace mcswlib.ServerStatus
                 {
                     Debug.WriteLine("Server '" + Parent.Address + ":" + Parent.Port + "' status change: " + current.HadSuccess);
                     var errMsg = current.LastError != null ? "Connection Failed: " + current.LastError.GetType().Name : "";
-                    events.Add(new OnlineStatusEvent(messages, 
+                    events.Add(new OnlineStatusEvent( 
                         current.HadSuccess, current.HadSuccess ? current.ServerMotd : errMsg, 
-                        current.HadSuccess ? current.MinecraftVersion : "0.0.0"));
+                        current.HadSuccess ? current.MinecraftVersion : "0.0.0",
+                        current.CurrentPlayerCount, current.MaxPlayerCount));
                 }
 
                 // if first info, or Last player count was different (player went online or offline) => invoke
@@ -77,7 +74,7 @@ namespace mcswlib.ServerStatus
                     if (diff != 0)
                     {
                         Debug.WriteLine("Server '" + Parent.Address + ":" + Parent.Port + "' count change: " + diff);
-                        events.Add(new PlayerChangeEvent(messages, diff));
+                        events.Add(new PlayerChangeEvent(diff));
                     }
                 }
 
@@ -93,7 +90,7 @@ namespace mcswlib.ServerStatus
                         userNames[p.Id] = p.Name;
                         // if notify and user has state and Last state was offline and user is watched, notify change
                         if (NotifyNames && (!userStates.ContainsKey(p.Id) || !userStates[p.Id]))
-                            events.Add(new PlayerStateEvent(messages, p, true));
+                            events.Add(new PlayerStateEvent(p, true));
                         // register state or set to true
                         userStates[p.Id] = true;
                     }
@@ -110,7 +107,7 @@ namespace mcswlib.ServerStatus
                     var p = new PlayerPayLoad { Id = k, RawName = userNames[k] };
                     // notify => invoke
                     if (NotifyNames)
-                        events.Add(new PlayerStateEvent(messages, p, false));
+                        events.Add(new PlayerStateEvent(p, false));
 
                 }
             }

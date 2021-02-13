@@ -7,11 +7,13 @@
         /// </summary>
         /// <param name="stat"></param>
         /// <param name="statusText"></param>
-        internal OnlineStatusEvent(EventMessages msg, bool stat, string statusText = "", string ver = "-") : base(msg)
+        internal OnlineStatusEvent(bool stat, string statusText = "", string ver = "-", int cur = 0, int max = 0)
         {
             ServerStatus = stat;
             StatusText = statusText;
             Version = ver;
+            CurrentPlayers = cur;
+            MaxPlayers = max;
         }
 
         public bool ServerStatus { get; }
@@ -20,11 +22,8 @@
 
         public string Version { get; }
 
-        public override string ToString()
-        {
-            return (ServerStatus ? messages.ServerOnline : messages.ServerOffline)
-                .Replace("<text>", StatusText)
-                .Replace("<version>", Version);
-        }
+        public int CurrentPlayers { get; }
+
+        public int MaxPlayers { get; }
     }
 }

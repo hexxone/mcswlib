@@ -9,6 +9,8 @@ namespace mcswlib.ServerStatus
 {
     public class ServerStatusUpdater : IDisposable
     {
+        private const int Retrys = 3;
+
         internal ServerStatusUpdater() { }
 
         // the time over which server infos are held in memory...
@@ -37,7 +39,7 @@ namespace mcswlib.ServerStatus
                 task.Wait(token);
                 return task.Result;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Logger.WriteLine("Ping Timeout? [" + Address + ":" + Port + "]");
                 _history.Add(new ServerInfoBase(DateTime.Now.Subtract(TimeSpan.FromSeconds(timeOut)), timeOut * 1000, new TimeoutException()));
@@ -50,14 +52,15 @@ namespace mcswlib.ServerStatus
         {
             var srv = "[" + Address + ":" + Port + "]";
             Logger.WriteLine("Pinging server " + srv);
+            // current server-info object
             ServerInfoBase current = null;
             // safety-wrapper
             try
             {
-                // current server-info object
                 for (var i = 0; i < 2; i++)
-                    if ((current = GetMethod(i, ct)).HadSuccess || ct.IsCancellationRequested)
-                        break;
+                    for(var r = 0; r < Retrys; r++)
+                        if ((current = GetMethod(i, ct)).HadSuccess || ct.IsCancellationRequested)
+                            break;
 
                 // if the result is null, nothing to do here
                 if (current != null)

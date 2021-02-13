@@ -39,12 +39,12 @@ namespace mcswlib.ServerStatus.ServerInfo
             WriteString(writeBuffer, address);
             WriteShort(writeBuffer, Convert.ToInt16(port));
             WriteVarInt(writeBuffer, 1);
-            Flush(ct, writeBuffer, stream, 0);
+            Flush(writeBuffer, stream, 0, ct);
             // yep, twice.
-            Flush(ct, writeBuffer, stream, 0);
+            Flush(writeBuffer, stream, 0, ct);
 
             var readBuffer = new byte[BufferSize];
-            await stream.ReadAsync(readBuffer, 0, readBuffer.Length, ct);
+            await stream.ReadAsync(readBuffer.AsMemory(0, readBuffer.Length), ct);
             // done
             stream.Close();
             client.Close();
@@ -67,6 +67,17 @@ namespace mcswlib.ServerStatus.ServerInfo
                 GetSample(ping.players));
         }
 
+
+        // =======================================================
+        // Parser Utilities
+        // =======================================================
+
+
+        /// <summary>
+        ///     Try to parse the description string from dynamic json
+        /// </summary>
+        /// <param name="desc"></param>
+        /// <returns></returns>
         private static string GetDescription(dynamic desc)
         {
             string res = null;
@@ -85,7 +96,7 @@ namespace mcswlib.ServerStatus.ServerInfo
                         if (!string.IsNullOrWhiteSpace(build)) build += " ";
                         build += pLoad.text;
                     }
-                    res = build;
+                    res = build.Replace("  ", " ");
                 }
             }
             catch (Exception e) { Logger.WriteLine("Error description.extra.text: " + e, Types.LogLevel.Debug); }
@@ -104,6 +115,11 @@ namespace mcswlib.ServerStatus.ServerInfo
             return res;
         }
 
+        /// <summary>
+        ///     Try to get image object for encoded base64 icon
+        /// </summary>
+        /// <param name="favicon"></param>
+        /// <returns></returns>
         private static SKImage GetImage(dynamic favicon)
         {
             SKImage retour = null;
@@ -113,7 +129,7 @@ namespace mcswlib.ServerStatus.ServerInfo
                 if (!string.IsNullOrEmpty(imgStr))
                 {
                     if (!imgStr.StartsWith(Header)) throw new Exception("Unknown Format");
-                    var imgData = Convert.FromBase64String(imgStr.Substring(Header.Length));
+                    var imgData = Convert.FromBase64String(imgStr[Header.Length..]);
                     retour = SKImage.FromEncodedData(imgData);
                 }
             }
@@ -124,6 +140,11 @@ namespace mcswlib.ServerStatus.ServerInfo
             return retour;
         }
 
+        /// <summary>
+        ///     Try to parse the the player samples from json
+        /// </summary>
+        /// <param name="players"></param>
+        /// <returns></returns>
         private static List<PlayerPayLoad> GetSample(dynamic players)
         {
             var reour = new List<PlayerPayLoad>();
@@ -142,6 +163,12 @@ namespace mcswlib.ServerStatus.ServerInfo
             }
             return reour;
         }
+
+
+        // =======================================================
+        // Network Read Utilities
+        // =======================================================
+
 
         private static byte ReadByte(ref int offset, byte[] buffer)
         {
@@ -180,6 +207,12 @@ namespace mcswlib.ServerStatus.ServerInfo
             return Encoding.UTF8.GetString(data);
         }
 
+
+        // =======================================================
+        // Network Write Utilities
+        // =======================================================
+
+
         private static void WriteVarInt(List<byte> buffer, int value)
         {
             while ((value & 128) != 0)
@@ -202,7 +235,7 @@ namespace mcswlib.ServerStatus.ServerInfo
             buffer.AddRange(buff);
         }
 
-        private static async void Flush(CancellationToken ct, List<byte> buffer, NetworkStream stream, int id = -1)
+        private static async void Flush(List<byte> buffer, Stream stream, int id, CancellationToken ct)
         {
             var buff = buffer.ToArray();
             buffer.Clear();
@@ -221,9 +254,9 @@ namespace mcswlib.ServerStatus.ServerInfo
             var bufferLength = buffer.ToArray();
             buffer.Clear();
 
-            await stream.WriteAsync(bufferLength, 0, bufferLength.Length, ct);
-            await stream.WriteAsync(packetData, 0, packetData.Length, ct);
-            await stream.WriteAsync(buff, 0, buff.Length, ct);
+            await stream.WriteAsync(bufferLength.AsMemory(0, bufferLength.Length), ct);
+            await stream.WriteAsync(packetData.AsMemory(0, packetData.Length), ct);
+            await stream.WriteAsync(buff.AsMemory(0, buff.Length), ct);
         }
     }
 }

@@ -11,15 +11,6 @@ namespace mcswlib.ServerStatus
     {
         private static int internalCount = 0;
 
-        /// <summary>
-        ///     Constructor with optional
-        /// </summary>
-        /// <param name="msg"></param>
-        public ServerStatusFactory(EventMessages msg = null)
-        {
-            if (msg == null) msg = new EventMessages();
-            Messages = msg;
-        }
 
         private readonly List<ServerStatusUpdater> updaters = new List<ServerStatusUpdater>();
 
@@ -29,8 +20,6 @@ namespace mcswlib.ServerStatus
 
         private Thread thread;
 
-
-        public EventMessages Messages { get; }
 
         public bool AutoUpdating => thread != null && thread.IsAlive;
 
@@ -50,11 +39,13 @@ namespace mcswlib.ServerStatus
         public void StartAutoUpdate(int secInterval = 30)
         {
             if (secInterval < 0) throw new Exception("Interval must be >= 0");
-            if (ServerChanged.Target == null) throw new Exception("Event-listener must be registered before auto-updating!");
+            if (ServerChanged != null && ServerChanged.Target == null) throw new Exception("Event-listener must be registered before auto-updating!");
             StopAutoUpdate();
             token = false;
-            thread = new Thread(() => AutoUpdater(secInterval));
-            thread.Name = "ServerStatusFactoryAutoUpdater_" + internalCount++;
+            thread = new Thread(() => AutoUpdater(secInterval))
+            {
+                Name = "ServerStatusFactoryAutoUpdater_" + internalCount++
+            };
             thread.Start();
         }
 
@@ -93,7 +84,7 @@ namespace mcswlib.ServerStatus
             if (found == null)
                 updaters.Add(found = new ServerStatusUpdater() { Address = addr, Port = port });
             // Make & add new status
-            var state = new ServerStatus(label, found, Messages);
+            var state = new ServerStatus(label, found);
             states.Add(state);
             return state;
         }

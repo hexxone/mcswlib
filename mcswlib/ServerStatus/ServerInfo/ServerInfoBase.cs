@@ -44,6 +44,9 @@ namespace mcswlib.ServerStatus.ServerInfo
             RequestDate = dt;
             RequestTime = sp;
             LastError = ex;
+
+            MaxPlayerCount = 0;
+            CurrentPlayerCount = 0;
             MinecraftVersion = "0.0.0";
         }
 
@@ -114,10 +117,6 @@ namespace mcswlib.ServerStatus.ServerInfo
         /// <summary>
         ///     better Dispose of Graphics object explicitly
         /// </summary>
-        public void Dispose()
-        {
-            if (FavIcon != null)
-                FavIcon.Dispose();
-        }
+        public void Dispose() => FavIcon?.Dispose();
     }
 }
