@@ -60,7 +60,7 @@ namespace mcswlib.ServerStatus.ServerInfo
             {
                 try
                 {
-                    foreach (dynamic key in ping.players.sample)
+                    foreach (var key in ping.players.sample)
                     {
                         if (key.id == null || key.name == null) continue;
                         var plr = new PlayerPayLoad() { Id = key.id, RawName = key.name };
@@ -69,7 +69,7 @@ namespace mcswlib.ServerStatus.ServerInfo
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error when sample processing: " + e.ToString(), Types.LogLevel.Debug);
+                    Logger.WriteLine("Error when sample processing: " + e, Types.LogLevel.Debug);
                 }
             }
             // parse favicon
@@ -86,7 +86,7 @@ namespace mcswlib.ServerStatus.ServerInfo
                 }
                 catch (Exception ie)
                 {
-                    Logger.WriteLine("Error parsing favicon: " + ie.ToString(), Types.LogLevel.Debug);
+                    Logger.WriteLine("Error parsing favicon: " + ie, Types.LogLevel.Debug);
                 }
             }
             // parse MOTD/description
@@ -99,7 +99,7 @@ namespace mcswlib.ServerStatus.ServerInfo
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error description.text: " + e.ToString(), Types.LogLevel.Debug);
+                    Logger.WriteLine("Error description.text: " + e, Types.LogLevel.Debug);
                 }
             }
             if (string.IsNullOrEmpty(desc))
@@ -110,7 +110,7 @@ namespace mcswlib.ServerStatus.ServerInfo
                 }
                 catch (Exception ex)
                 {
-                    Logger.WriteLine("Error description: " + ex.ToString(), Types.LogLevel.Debug);
+                    Logger.WriteLine("Error description: " + ex, Types.LogLevel.Debug);
                 }
             }
 

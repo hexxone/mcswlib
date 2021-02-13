@@ -36,13 +36,9 @@ namespace mcswlib.ServerStatus.ServerInfo
             sw.Start();
             try
             {
-                using (var client = new TcpClient())
-                {
-                    using (var stream = ConnectWrap(ct, client))
-                    {
-                        return await Get(ct, dt, sw, client, stream);
-                    }
-                }
+                using var client = new TcpClient();
+                using var stream = ConnectWrap(ct, client);
+                return await Get(ct, dt, sw, client, stream);
             }
             catch(Exception e)
             {

@@ -31,13 +31,11 @@ namespace mcswlib.ServerStatus
         {
             try
             {
-                using (var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeOut)))
-                {
-                    var token = tokenSource.Token;
-                    var task = Task.Run(() => Ping(token), token);
-                    task.Wait(token);
-                    return task.Result;
-                }
+                using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeOut));
+                var token = tokenSource.Token;
+                var task = Task.Run(() => Ping(token), token);
+                task.Wait(token);
+                return task.Result;
             }
             catch (Exception e)
             {
@@ -66,16 +64,18 @@ namespace mcswlib.ServerStatus
                 {
                     Logger.WriteLine("Ping result " + srv + " is " + current.HadSuccess, Types.LogLevel.Debug);
                     _history.Add(current);
+                    // cleanup, done
+                    ClearMem();
+                    return current;
                 }
-                else Logger.WriteLine("Ping result null " + srv, Types.LogLevel.Debug);
+
+                Logger.WriteLine("Ping result null " + srv, Types.LogLevel.Debug);
             }
             catch (Exception ex)
             {
-                Logger.WriteLine("Fatal Error when Pinging... " + ex.ToString(), Types.LogLevel.Error);
+                Logger.WriteLine("Fatal Error when Pinging... " + ex, Types.LogLevel.Error);
             }
-            // cleanup, done
-            ClearMem();
-            return current;
+            return null;
         }
 
         /// <summary>
@@ -100,13 +100,11 @@ namespace mcswlib.ServerStatus
         /// <returns></returns>
         private ServerInfoBase GetMethod(int method, CancellationToken ct)
         {
-            switch (method)
+            return method switch
             {
-                case 1:
-                    return new GetServerInfoOld(Address, Port).DoAsync(ct).Result;
-                default:
-                    return new GetServerInfoNew(Address, Port).DoAsync(ct).Result;
-            }
+                1 => new GetServerInfoOld(Address, Port).DoAsync(ct).Result,
+                _ => new GetServerInfoNew(Address, Port).DoAsync(ct).Result
+            };
         }
 
         /// <summary>
