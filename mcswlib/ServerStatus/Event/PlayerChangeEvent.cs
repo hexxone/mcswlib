@@ -1,15 +1,13 @@
-﻿using System;
-
-namespace mcswlib.ServerStatus.Event
+﻿namespace mcswlib.ServerStatus.Event
 {
     public class PlayerChangeEvent : EventBase
     {
 
-        internal PlayerChangeEvent(int diff)
+        internal PlayerChangeEvent(double diff)
         {
             PlayerDiff = diff;
         }
 
-        public int PlayerDiff { get; }
+        public double PlayerDiff { get; }
     }
 }

@@ -7,7 +7,7 @@
         /// </summary>
         /// <param name="stat"></param>
         /// <param name="statusText"></param>
-        internal OnlineStatusEvent(bool stat, string statusText = "", string ver = "-", int cur = 0, int max = 0)
+        internal OnlineStatusEvent(bool stat, string statusText = "", string ver = "-", double cur = 0, double max = 0)
         {
             ServerStatus = stat;
             StatusText = statusText;
@@ -22,8 +22,8 @@
 
         public string Version { get; }
 
-        public int CurrentPlayers { get; }
+        public double CurrentPlayers { get; }
 
-        public int MaxPlayers { get; }
+        public double MaxPlayers { get; }
     }
 }

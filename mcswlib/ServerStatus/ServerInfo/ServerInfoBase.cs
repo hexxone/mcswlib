@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using mcswbot2.Bot.Objects;
 using mcswlib.ServerStatus.Event;
+using Newtonsoft.Json;
 using SkiaSharp;
 
 namespace mcswlib.ServerStatus.ServerInfo
 {
-    public class ServerInfoBase : IDisposable
+    public class ServerInfoBase : ServerInfoBasic, IDisposable
     {
         /// <summary>
         ///     Creates a new instance of <see cref="ServerInfoBase" /> with specified values
@@ -38,33 +40,18 @@ namespace mcswlib.ServerStatus.ServerInfo
         ///     => failed request
         /// </summary>
         /// <param name="ex">the Last occured Exception when determining Server status</param>
-        internal ServerInfoBase(DateTime dt, long sp, Exception ex)
+        internal ServerInfoBase(DateTime dt, Exception ex)
         {
-            HadSuccess = false;
             RequestDate = dt;
-            RequestTime = sp;
             LastError = ex;
 
+            HadSuccess = false;
+            RequestTime = 1;
             MaxPlayerCount = 0;
             CurrentPlayerCount = 0;
             MinecraftVersion = "0.0.0";
         }
-
-        /// <summary>
-        ///     TimeStamp when the request was done
-        /// </summary>
-        public DateTime RequestDate { get; }
-
-        /// <summary>
-        ///     How long did the request take to complete in MS?
-        /// </summary>
-        public long RequestTime { get; }
-
-        /// <summary>
-        ///     Determines if the request was successfull
-        /// </summary>
-        public bool HadSuccess { get; }
-
+        
         /// <summary>
         ///     Returns the Last occured runtime error
         /// </summary>
@@ -78,17 +65,13 @@ namespace mcswlib.ServerStatus.ServerInfo
         /// <summary>
         ///     Gets the server's MOTD as Text
         /// </summary>
+        [JsonIgnore]
         public string ServerMotd => Types.FixMcChat(RawMotd);
 
         /// <summary>
         ///     Gets the server's max player count
         /// </summary>
-        public int MaxPlayerCount { get; }
-
-        /// <summary>
-        ///     Gets the server's current player count
-        /// </summary>
-        public int CurrentPlayerCount { get; }
+        public double MaxPlayerCount { get; }
 
         /// <summary>
         ///     Gets the server's Minecraft version
@@ -103,17 +86,9 @@ namespace mcswlib.ServerStatus.ServerInfo
         /// <summary>
         ///     The Icon for the Server
         /// </summary>
+        [JsonIgnore]
         public SKImage FavIcon { get; }
-
-        /// <summary>
-        ///     String override
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return string.Format($"[Success:{HadSuccess}, Ping:{RequestTime}ms, LasError:{LastError}, Motd:{ServerMotd}, MaxPlayers:{MaxPlayerCount}, CurrentPlayers:{CurrentPlayerCount}, Version:{MinecraftVersion}]");
-        }
-
+        
         /// <summary>
         ///     better Dispose of Graphics object explicitly
         /// </summary>

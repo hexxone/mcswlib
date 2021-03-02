@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using mcswlib.ServerStatus.ServerInfo;
@@ -9,70 +7,73 @@ namespace mcswlib.ServerStatus
 {
     public class ServerStatusUpdater : IDisposable
     {
-        private const int Retrys = 3;
+        // tries before a server is determined offline
+        public static int Retries = 3;
+        public static int RetryMs = 3000;
 
         internal ServerStatusUpdater() { }
-
-        // the time over which server infos are held in memory...
-        public static TimeSpan ClearSpan = new TimeSpan(0, 6, 0, 0);
-
-        // contains the received Server-Infos.
-        private readonly List<ServerInfoBase> _history = new List<ServerInfoBase>();
+        
 
         public string Address { get; set; }
         public int Port { get; set; }
+        
 
-        public ServerInfoBase[] History => _history.ToArray();
+        public ServerInfoBase Latest;
+
+        public EventHandler<ServerInfoBase> UpdatedEvent;
 
 
         /// <summary>
         ///     This method will ping the server to request infos.
-        ///     This is done in context of a task and 30 second timeout
+        ///     This is done in context of a task and 10 second timeout
         /// </summary>
-        public ServerInfoBase Ping(int timeOut = 30)
+        public void Execute(int timeOutMs = 30000)
         {
+            var tSpan = TimeSpan.FromMilliseconds(timeOutMs);
             try
             {
-                using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeOut));
+                using var tokenSource = new CancellationTokenSource(tSpan);
                 var token = tokenSource.Token;
-                var task = Task.Run(() => Ping(token), token);
+                var task = Task.Run(() => Execute(token));
                 task.Wait(token);
-                return task.Result;
+                Latest = task.Result;
+                if (Latest == null) throw new Exception("null");
+                UpdatedEvent?.Invoke(this, Latest);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Logger.WriteLine("Ping Timeout? [" + Address + ":" + Port + "]");
-                _history.Add(new ServerInfoBase(DateTime.Now.Subtract(TimeSpan.FromSeconds(timeOut)), timeOut * 1000, new TimeoutException()));
+                Logger.WriteLine("Execute Error? [" + Address + ":" + Port + "]: " + e);
+                Latest = new ServerInfoBase(DateTime.Now - tSpan, e);
             }
-            return null;
         }
 
 
-        private ServerInfoBase Ping(CancellationToken ct)
+        private ServerInfoBase Execute(CancellationToken ct)
         {
             var srv = "[" + Address + ":" + Port + "]";
             Logger.WriteLine("Pinging server " + srv);
-            // current server-info object
-            ServerInfoBase current = null;
             // safety-wrapper
             try
             {
-                for (var i = 0; i < 2; i++)
-                    for(var r = 0; r < Retrys; r++)
-                        if ((current = GetMethod(i, ct)).HadSuccess || ct.IsCancellationRequested)
-                            break;
+                // current server-info object
+                var dt = DateTime.Now;
+                ServerInfoBase current = null;
+                var si = new ServerInfo.ServerInfo(Address, Port);
+                for (var r = 0; r < Retries; r++)
+                {
+                    current = si.GetAsync(ct, dt).Result;
+                    if (current.HadSuccess || ct.IsCancellationRequested) break;
+                    Task.Delay(RetryMs).Wait(ct);
+                }
 
                 // if the result is null, nothing to do here
                 if (current != null)
                 {
-                    Logger.WriteLine("Ping result " + srv + " is " + current.HadSuccess, Types.LogLevel.Debug);
-                    _history.Add(current);
-                    // cleanup, done
-                    ClearMem();
+                    Logger.WriteLine("Execute result: " + srv + " is: " + current.HadSuccess + " Err: " + current.LastError, Types.LogLevel.Debug);
                     return current;
                 }
 
-                Logger.WriteLine("Ping result null " + srv, Types.LogLevel.Debug);
+                Logger.WriteLine("Execute result null: " + srv, Types.LogLevel.Debug);
             }
             catch (Exception ex)
             {
@@ -80,56 +81,14 @@ namespace mcswlib.ServerStatus
             }
             return null;
         }
+        
 
         /// <summary>
-        ///     Returns the latest (successfull) ServerInfo
-        /// </summary>
-        /// <param name="successful">filter for the Last successfull</param>
-        /// <returns></returns>
-        public ServerInfoBase GetLatestServerInfo(bool successful = false)
-        {
-            var tmpList = new List<ServerInfoBase>();
-            tmpList.AddRange(successful ? _history.FindAll(o => o.HadSuccess) : _history);
-            return tmpList.Count > 0
-                ? tmpList.OrderByDescending(ob => ob.RequestDate.AddMilliseconds(ob.RequestTime)).First()
-                : null;
-        }
-
-        /// <summary>
-        ///     This method will request the server infos for the given version/method.
-        ///     it is run as task to make it cancelable
-        /// </summary>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        private ServerInfoBase GetMethod(int method, CancellationToken ct)
-        {
-            return method switch
-            {
-                1 => new GetServerInfoOld(Address, Port).DoAsync(ct).Result,
-                _ => new GetServerInfoNew(Address, Port).DoAsync(ct).Result
-            };
-        }
-
-        /// <summary>
-        ///     Remove all objects of which the Timestamp exceeds the Clearspan and run GC.
-        /// </summary>
-        private void ClearMem()
-        {
-            // TODO TEST
-            _history.FindAll(o => o.RequestDate < DateTime.Now.Subtract(ClearSpan)).ForEach(d =>
-            {
-                _history.Remove(d);
-                d.Dispose();
-            });
-            GC.Collect();
-        }
-
-        /// <summary>
-        ///     Dispose all gathered elements explicitely
+        ///     Dispose all gathered elements explicitly
         /// </summary>
         public void Dispose()
         {
-            _history.ForEach(d => d.Dispose());
+            Latest?.Dispose();
         }
     }
 }

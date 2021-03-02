@@ -1,7 +1,11 @@
-﻿namespace mcswlib
+﻿using System.Threading.Tasks;
+
+namespace mcswlib
 {
     public static class Types
     {
+        public static ParallelOptions POptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+
         /// <summary>
         ///     Determines what to log and what not.
         /// </summary>

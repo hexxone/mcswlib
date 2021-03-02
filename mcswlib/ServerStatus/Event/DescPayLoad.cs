@@ -11,26 +11,26 @@
             bool strikethrough = false,
             bool obfuscated = false)
         {
-            this.text = text;
-            this.color = color;
-            this.italic = italic;
-            this.bold = bold;
-            this.underlined = underlined;
-            this.strikethrough = strikethrough;
-            this.obfuscated = obfuscated;
+            this.Text = text;
+            this.Color = color;
+            this.Italic = italic;
+            this.Bold = bold;
+            this.Underlined = underlined;
+            this.Strikethrough = strikethrough;
+            this.Obfuscated = obfuscated;
         }
 
         // should always be set
-        public string text { get; }
+        public string Text { get; }
 
         // most used params?
-        public string color { get; }
-        public bool italic { get; }
+        public string Color { get; }
+        public bool Italic { get; }
 
         // rest of them
-        public bool bold { get; }
-        public bool underlined { get; }
-        public bool strikethrough { get; }
-        public bool obfuscated { get; }
+        public bool Bold { get; }
+        public bool Underlined { get; }
+        public bool Strikethrough { get; }
+        public bool Obfuscated { get; }
     }
 }
